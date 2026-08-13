@@ -321,8 +321,19 @@ function createApp(discordClient) {
 	app.get("/files/:id", requireAuth, async (req, res) => {
 		const file = await queries.getFileById(req.params.id);
 		if (!file) return res.status(404).send("File not found");
-		res.set("Content-Type", file.mimetype || "application/octet-stream");
-		res.set("Content-Disposition", `attachment; filename="${safeFilename(file.filename)}"`);
+		const mimetype = file.mimetype || "application/octet-stream";
+		// image/svg+xml can carry <script>, so exclude it from inline preview despite the image/ prefix.
+		const isPreviewable =
+			(mimetype.startsWith("image/") && mimetype !== "image/svg+xml") ||
+			mimetype.startsWith("audio/") ||
+			mimetype.startsWith("video/") ||
+			mimetype === "text/plain";
+		const disposition = isPreviewable ? "inline" : "attachment";
+
+		res.set("Content-Type", mimetype);
+		// Untrusted mimetype from the uploader; stop browsers from sniffing it into something dangerous.
+		res.set("X-Content-Type-Options", "nosniff");
+		res.set("Content-Disposition", `${disposition}; filename="${safeFilename(file.filename)}"`);
 		res.send(Buffer.from(file.data, "base64"));
 	});
 
