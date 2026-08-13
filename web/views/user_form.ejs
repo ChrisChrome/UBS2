@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title><%= mode === 'new' ? 'New User' : 'Edit User' %></title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
+		input, select { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
+		.error { color: #b00020; margin-bottom: 12px; }
+	</style>
+</head>
+<body>
+	<p><a href="/users">&larr; Back to users</a></p>
+	<h1><%= mode === 'new' ? 'New User' : 'Edit User' %></h1>
+	<% if (error) { %><div class="error"><%= error %></div><% } %>
+	<form method="post" action="<%= mode === 'new' ? '/users' : `/users/${user.id}` %>">
+		<input type="text" name="username" placeholder="Username" value="<%= user ? user.username : '' %>" required />
+		<input type="password" name="password" placeholder="<%= mode === 'new' ? 'Password' : 'New password (leave blank to keep current)' %>" <%= mode === 'new' ? 'required' : '' %> autocomplete="new-password" />
+		<select name="role" required>
+			<% roles.forEach((r) => { %>
+				<option value="<%= r %>" <%= user && user.role === r ? 'selected' : '' %>><%= r %></option>
+			<% }) %>
+		</select>
+		<button type="submit"><%= mode === 'new' ? 'Create user' : 'Save changes' %></button>
+	</form>
+</body>
+</html>

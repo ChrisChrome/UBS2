@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Audit Log</title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: #222; }
+		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+		table { width: 100%; border-collapse: collapse; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+		.action { font-family: monospace; font-size: 12px; background: #eee; padding: 2px 6px; border-radius: 4px; }
+	</style>
+</head>
+<body>
+	<p><a href="/">&larr; Back to cases</a></p>
+	<header>
+		<h1>Audit Log</h1>
+		<div>
+			Signed in as <%= username %>
+			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
+		</div>
+	</header>
+	<table>
+		<thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+		<tbody>
+			<% entries.forEach((e) => { %>
+				<tr>
+					<td><%= e.created_at %></td>
+					<td><%= e.actor || 'unknown' %></td>
+					<td><span class="action"><%= e.action %></span></td>
+					<td><%= e.detail || '' %></td>
+				</tr>
+			<% }) %>
+			<% if (entries.length === 0) { %>
+				<tr><td colspan="4"><em>No audit entries yet.</em></td></tr>
+			<% } %>
+		</tbody>
+	</table>
+</body>
+</html>

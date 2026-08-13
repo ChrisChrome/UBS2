@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>UBS Setup</title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
+		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
+		button { padding: 8px 16px; }
+		.error { color: #b00020; margin-bottom: 12px; }
+		.secret { font-family: monospace; background: #f4f4f4; padding: 8px; word-break: break-all; }
+		img { display: block; margin: 12px 0; }
+	</style>
+</head>
+<body>
+	<h1>Create the first admin account</h1>
+	<% if (error) { %><div class="error"><%= error %></div><% } %>
+	<p>Scan this QR with your authenticator app, then confirm with a generated code below.</p>
+	<img src="<%= qr %>" alt="TOTP QR code" width="200" height="200" />
+	<p>Or enter this secret manually: <span class="secret"><%= secret %></span></p>
+	<form method="post" action="/setup">
+		<input type="text" name="username" placeholder="Username" required autocomplete="username" />
+		<input type="password" name="password" placeholder="Password" required autocomplete="new-password" />
+		<input type="text" name="totpToken" placeholder="6-digit authenticator code" required autocomplete="one-time-code" />
+		<button type="submit">Create admin account</button>
+	</form>
+</body>
+</html>

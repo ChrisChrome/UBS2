@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title><%= caseItem.title %></title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: #222; }
+		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+		section { margin-bottom: 32px; }
+		table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+		.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; color: #fff; }
+		.badge.verified { background: #c0392b; }
+		.badge.suspected { background: #999; }
+		form.inline { display: inline; }
+		textarea { width: 100%; box-sizing: border-box; padding: 8px; }
+		input, select { padding: 6px; }
+		.history { font-size: 12px; color: #555; }
+		.note { border-bottom: 1px solid #eee; padding: 8px 0; }
+		.note .meta { font-size: 12px; color: #777; }
+		.alert { background: #fdecea; color: #b00020; border: 1px solid #f5c6cb; padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; }
+	</style>
+</head>
+<body>
+	<p><a href="/">&larr; Back to cases</a></p>
+	<% if (error) { %><div class="alert"><%= error %></div><% } %>
+	<header>
+		<h1><%= caseItem.title %></h1>
+		<div>
+			Signed in as <%= username %>
+			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
+			<% if (canDeleteCases) { %>
+				<form class="inline" method="post" action="/cases/<%= caseItem.id %>/delete" onsubmit="return confirm('Delete this entire case? This cannot be undone.')">
+					<button type="submit">Delete case</button>
+				</form>
+			<% } %>
+		</div>
+	</header>
+
+	<section>
+		<h2>Linked identities</h2>
+		<table>
+			<thead>
+				<tr><th>Platform</th><th>User ID</th><th>Last known name</th><th>Status</th><th>Name history</th><th>Actions</th></tr>
+			</thead>
+			<tbody>
+				<% identities.forEach((identity) => { %>
+					<tr>
+						<td><%= identity.platform %></td>
+						<td><%= identity.platform_user_id %></td>
+						<td>
+							<%= identity.username || '(unchecked)' %>
+							<% if (identity.display_name && identity.display_name !== identity.username) { %>
+								(<%= identity.display_name %>)
+							<% } %>
+						</td>
+						<td><span class="badge <%= identity.status %>"><%= identity.status %></span></td>
+						<td class="history">
+							<% (histories[identity.id] || []).forEach((h) => { %>
+								<div><%= h.changed_at %>: <%= h.username %> / <%= h.display_name %></div>
+							<% }) %>
+							<% if (!histories[identity.id] || histories[identity.id].length === 0) { %>
+								<em>no changes logged</em>
+							<% } %>
+						</td>
+						<td>
+							<% if (canEditCases) { %>
+								<% if (identity.status === 'verified') { %>
+									<form class="inline" method="post" action="/identities/<%= identity.id %>/unverify">
+										<button type="submit">Unverify</button>
+									</form>
+								<% } else { %>
+									<form class="inline" method="post" action="/identities/<%= identity.id %>/verify">
+										<button type="submit">Mark verified</button>
+									</form>
+								<% } %>
+								<form class="inline" method="post" action="/identities/<%= identity.id %>/delete" onsubmit="return confirm('Remove this linked identity?')">
+									<button type="submit">Remove</button>
+								</form>
+							<% } %>
+						</td>
+					</tr>
+				<% }) %>
+			</tbody>
+		</table>
+
+		<% if (canEditCases) { %>
+		<h3>Link a new identity</h3>
+		<form method="post" action="/cases/<%= caseItem.id %>/identities">
+			<select name="platform" required>
+				<option value="discord">Discord</option>
+				<option value="roblox">Roblox</option>
+			</select>
+			<input type="text" name="platformUserId" placeholder="Platform user ID" required />
+			<select name="status">
+				<option value="suspected">Suspected</option>
+				<option value="verified">Verified alt/alias</option>
+			</select>
+			<button type="submit">Add link</button>
+		</form>
+		<% } %>
+	</section>
+
+	<section>
+		<h2>Notes</h2>
+		<% if (canEditCases) { %>
+		<form method="post" action="/cases/<%= caseItem.id %>/notes">
+			<textarea name="body" rows="3" placeholder="Add a note..." required></textarea>
+			<button type="submit">Add note</button>
+		</form>
+		<% } %>
+		<% notes.forEach((note) => { %>
+			<div class="note">
+				<div class="meta"><%= note.author || 'unknown' %> &middot; <%= note.created_at %></div>
+				<div><%= note.body %></div>
+				<% if (canDeleteNotes) { %>
+					<form class="inline" method="post" action="/notes/<%= note.id %>/delete" onsubmit="return confirm('Delete this note?')">
+						<button type="submit">Delete</button>
+					</form>
+				<% } %>
+			</div>
+		<% }) %>
+	</section>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>UBS Dashboard</title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: #222; }
+		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+		table { width: 100%; border-collapse: collapse; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+		a.button, button { padding: 6px 12px; }
+		form.inline { display: inline; }
+	</style>
+</head>
+<body>
+	<header>
+		<h1>Cases</h1>
+		<div>
+			Signed in as <%= username %> (<%= role %>)
+			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
+			<% if (canViewAuditLog) { %><a href="/audit-log">Audit log</a><% } %>
+			<form class="inline" method="post" action="/logout"><button type="submit">Log out</button></form>
+		</div>
+	</header>
+	<% if (canEditCases) { %><p><a class="button" href="/cases/new">+ New case</a></p><% } %>
+	<table>
+		<thead><tr><th>Title</th><th>Linked IDs</th><th>Updated</th></tr></thead>
+		<tbody>
+			<% cases.forEach((c) => { %>
+				<tr>
+					<td><a href="/cases/<%= c.id %>"><%= c.title %></a></td>
+					<td><%= c.identity_count %></td>
+					<td><%= c.updated_at %></td>
+				</tr>
+			<% }) %>
+		</tbody>
+	</table>
+</body>
+</html>

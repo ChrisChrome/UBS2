@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Manage Users</title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: #222; }
+		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+		table { width: 100%; border-collapse: collapse; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+		a.button, button { padding: 6px 12px; }
+		form.inline { display: inline; }
+		.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; color: #fff; background: #555; }
+	</style>
+</head>
+<body>
+	<p><a href="/">&larr; Back to cases</a></p>
+	<header>
+		<h1>Users</h1>
+		<div>
+			Signed in as <%= username %>
+			<% if (canViewAuditLog) { %><a href="/audit-log">Audit log</a><% } %>
+		</div>
+	</header>
+	<p><a class="button" href="/users/new">+ New user</a></p>
+	<table>
+		<thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+		<tbody>
+			<% users.forEach((u) => { %>
+				<tr>
+					<td><%= u.username %></td>
+					<td><span class="badge"><%= u.role %></span></td>
+					<td><%= u.created_at %></td>
+					<td>
+						<% if (canActOnUserRole(actorRole, u.role)) { %>
+							<a href="/users/<%= u.id %>/edit">Edit</a>
+							<form class="inline" method="post" action="/users/<%= u.id %>/delete" onsubmit="return confirm('Delete this user?')">
+								<button type="submit">Delete</button>
+							</form>
+						<% } else { %>
+							<em>no access</em>
+						<% } %>
+					</td>
+				</tr>
+			<% }) %>
+		</tbody>
+	</table>
+</body>
+</html>
