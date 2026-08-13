@@ -38,6 +38,11 @@ function createApp(discordClient) {
 		throw new Error("SESSION_SECRET is not set in .env");
 	}
 
+	// Only honor X-Forwarded-For when we know we're actually behind a trusted proxy.
+	if (String(process.env.TRUST_PROXY).toLowerCase() === "true") {
+		app.set("trust proxy", true);
+	}
+
 	app.set("view engine", "ejs");
 	app.set("views", path.join(__dirname, "views"));
 	app.use(express.urlencoded({ extended: false }));
@@ -71,10 +76,14 @@ function createApp(discordClient) {
 		}
 	}
 
-	function audit(req, action, detail) {
-		queries.logAudit(req.session.adminId, action, detail).catch((err) =>
+	function auditRaw(adminUserId, action, detail) {
+		queries.logAudit(adminUserId, action, detail).catch((err) =>
 			console.error(`[Web] audit log write failed: ${err.message}`)
 		);
+	}
+
+	function audit(req, action, detail) {
+		auditRaw(req.session.adminId, action, detail);
 	}
 
 	function safeFilename(name) {
@@ -129,15 +138,18 @@ function createApp(discordClient) {
 		const { username, password, totpToken } = req.body;
 		const admin = await queries.getAdminByUsername(username);
 		if (!admin || !(await verifyPassword(password, admin.password_hash))) {
+			auditRaw(admin ? admin.id : null, "user.login_failed", `username=${username} ip=${req.ip}`);
 			return res.render("login", { error: "Invalid credentials." });
 		}
 		if (!(await verifyTotp(totpToken, admin.totp_secret))) {
+			auditRaw(admin.id, "user.login_failed", `${admin.username} bad TOTP ip=${req.ip}`);
 			return res.render("login", { error: "Invalid authenticator code." });
 		}
 
 		req.session.adminId = admin.id;
 		req.session.username = admin.username;
 		req.session.role = admin.role;
+		auditRaw(admin.id, "user.login", `${admin.username} ip=${req.ip}`);
 		res.redirect("/");
 	});
 
