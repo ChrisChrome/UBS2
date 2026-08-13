@@ -110,7 +110,7 @@
 
 	<section>
 		<h2>Notes</h2>
-		<% if (canEditCases) { %>
+		<% if (canAddIdentities) { %>
 		<form method="post" action="/cases/<%= caseItem.id %>/notes" enctype="multipart/form-data">
 			<textarea name="body" rows="3" placeholder="Add a note..." required></textarea>
 			<input type="file" name="files" multiple />

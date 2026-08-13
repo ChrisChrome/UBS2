@@ -278,7 +278,7 @@ function createApp(discordClient) {
 	app.post(
 		"/cases/:id/notes",
 		requireAuth,
-		requirePermission(canEditCases),
+		requirePermission(canAddIdentities),
 		(req, res, next) => {
 			upload.array("files")(req, res, (err) => {
 				if (err) {
