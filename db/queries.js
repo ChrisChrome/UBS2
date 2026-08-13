@@ -96,6 +96,26 @@ function getNote(id) {
 	return get("SELECT * FROM case_notes WHERE id = ?", [id]);
 }
 
+// -- Note files --
+
+function addNoteFile(noteId, filename, mimetype, dataBase64, size) {
+	return run(
+		"INSERT INTO note_files (note_id, filename, mimetype, data, size) VALUES (?, ?, ?, ?, ?)",
+		[noteId, filename, mimetype, dataBase64, size]
+	).then((res) => res.lastID);
+}
+
+function getFilesForNote(noteId) {
+	return all(
+		"SELECT id, note_id, filename, mimetype, size, created_at FROM note_files WHERE note_id = ? ORDER BY created_at ASC",
+		[noteId]
+	);
+}
+
+function getFileById(id) {
+	return get("SELECT * FROM note_files WHERE id = ?", [id]);
+}
+
 // -- Linked identities --
 
 function addIdentity(caseId, platform, platformUserId, status, addedBy) {
@@ -211,6 +231,9 @@ module.exports = {
 	getNotes,
 	deleteNote,
 	getNote,
+	addNoteFile,
+	getFilesForNote,
+	getFileById,
 	addIdentity,
 	getIdentitiesForCase,
 	getIdentity,

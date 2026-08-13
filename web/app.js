@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const session = require("express-session");
 const QRCode = require("qrcode");
+const multer = require("multer");
 
 const queries = require("../db/queries");
 const {
@@ -15,6 +16,7 @@ const { enforceBanForIdentity } = require("../lib/banEnforcer");
 const { checkDiscordIdentity, checkRobloxIdentity } = require("../lib/nameWatcher");
 const {
 	canEditCases,
+	canAddIdentities,
 	canManageUsers,
 	canDeleteNotes,
 	canDeleteCases,
@@ -22,6 +24,12 @@ const {
 	assignableRoles,
 	canActOnUserRole,
 } = require("../lib/permissions");
+
+const MAX_FILE_SIZE_MB = Number(process.env.MAX_FILE_SIZE_MB) || 10;
+const upload = multer({
+	storage: multer.memoryStorage(),
+	limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
+});
 
 function createApp(discordClient) {
 	const app = express();
@@ -67,6 +75,10 @@ function createApp(discordClient) {
 		queries.logAudit(req.session.adminId, action, detail).catch((err) =>
 			console.error(`[Web] audit log write failed: ${err.message}`)
 		);
+	}
+
+	function safeFilename(name) {
+		return String(name).replace(/["\r\n]/g, "_");
 	}
 
 	// -- First-run setup (only reachable while no admin account exists) --
@@ -217,6 +229,9 @@ function createApp(discordClient) {
 		for (const identity of identities) {
 			histories[identity.id] = await queries.getNameHistory(identity.id);
 		}
+		for (const note of notes) {
+			note.files = await queries.getFilesForNote(note.id);
+		}
 
 		const error = req.session.flashError;
 		delete req.session.flashError;
@@ -228,6 +243,7 @@ function createApp(discordClient) {
 			histories,
 			username: req.session.username,
 			canEditCases: canEditCases(req.session.role),
+			canAddIdentities: canAddIdentities(req.session.role),
 			canManageUsers: canManageUsers(req.session.role),
 			canDeleteNotes: canDeleteNotes(req.session.role),
 			canDeleteCases: canDeleteCases(req.session.role),
@@ -242,14 +258,57 @@ function createApp(discordClient) {
 		res.redirect("/");
 	});
 
-	app.post("/cases/:id/notes", requireAuth, requirePermission(canEditCases), async (req, res) => {
-		const { body } = req.body;
-		if (body && body.trim()) {
-			await queries.addNote(req.params.id, req.session.adminId, body.trim());
-			audit(req, "note.create", `Case #${req.params.id}`);
+	app.post("/cases/:id/check-names", requireAuth, requirePermission(canManageUsers), async (req, res) => {
+		const identities = await queries.getIdentitiesForCase(req.params.id);
+		for (const identity of identities) {
+			try {
+				if (identity.platform === "discord") {
+					await checkDiscordIdentity(discordClient, identity);
+				} else {
+					await checkRobloxIdentity(identity);
+				}
+			} catch (err) {
+				console.error(`[Web] name check failed for ${identity.platform} ${identity.platform_user_id}: ${err.message}`);
+			}
 		}
+		audit(req, "case.check_names", `Case #${req.params.id}: checked ${identities.length} identities`);
 		res.redirect(`/cases/${req.params.id}`);
 	});
+
+	app.post(
+		"/cases/:id/notes",
+		requireAuth,
+		requirePermission(canEditCases),
+		(req, res, next) => {
+			upload.array("files")(req, res, (err) => {
+				if (err) {
+					req.session.flashError =
+						err.code === "LIMIT_FILE_SIZE"
+							? `File too large. Max size is ${MAX_FILE_SIZE_MB} MB.`
+							: "File upload failed.";
+					return res.redirect(`/cases/${req.params.id}`);
+				}
+				next();
+			});
+		},
+		async (req, res) => {
+			const { body } = req.body;
+			if (body && body.trim()) {
+				const noteId = await queries.addNote(req.params.id, req.session.adminId, body.trim());
+				for (const file of req.files || []) {
+					await queries.addNoteFile(
+						noteId,
+						safeFilename(file.originalname),
+						file.mimetype,
+						file.buffer.toString("base64"),
+						file.size
+					);
+				}
+				audit(req, "note.create", `Case #${req.params.id}`);
+			}
+			res.redirect(`/cases/${req.params.id}`);
+		}
+	);
 
 	app.post("/notes/:id/delete", requireAuth, requirePermission(canDeleteNotes), async (req, res) => {
 		const note = await queries.getNote(req.params.id);
@@ -259,7 +318,15 @@ function createApp(discordClient) {
 		res.redirect(`/cases/${note.case_id}`);
 	});
 
-	app.post("/cases/:id/identities", requireAuth, requirePermission(canEditCases), async (req, res) => {
+	app.get("/files/:id", requireAuth, async (req, res) => {
+		const file = await queries.getFileById(req.params.id);
+		if (!file) return res.status(404).send("File not found");
+		res.set("Content-Type", file.mimetype || "application/octet-stream");
+		res.set("Content-Disposition", `attachment; filename="${safeFilename(file.filename)}"`);
+		res.send(Buffer.from(file.data, "base64"));
+	});
+
+	app.post("/cases/:id/identities", requireAuth, requirePermission(canAddIdentities), async (req, res) => {
 		const { platform, platformUserId, status } = req.body;
 		if (["discord", "roblox"].includes(platform) && platformUserId && platformUserId.trim()) {
 			const trimmedId = platformUserId.trim();
@@ -269,7 +336,8 @@ function createApp(discordClient) {
 				return res.redirect(`/cases/${req.params.id}`);
 			}
 
-			const linkedStatus = status === "verified" ? "verified" : "suspected";
+			// Members may only add unverified links; other roles honor the submitted status.
+			const linkedStatus = canEditCases(req.session.role) && status === "verified" ? "verified" : "suspected";
 			try {
 				const identityId = await queries.addIdentity(
 					req.params.id,
