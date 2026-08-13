@@ -33,6 +33,10 @@ function updateAdminPassword(id, passwordHash) {
 	return run("UPDATE admin_users SET password_hash = ? WHERE id = ?", [passwordHash, id]);
 }
 
+function updateAdminTotpSecret(id, totpSecret) {
+	return run("UPDATE admin_users SET totp_secret = ? WHERE id = ?", [totpSecret, id]);
+}
+
 function deleteAdminUser(id) {
 	return run("DELETE FROM admin_users WHERE id = ?", [id]);
 }
@@ -196,6 +200,7 @@ module.exports = {
 	listAdminUsers,
 	updateAdminUser,
 	updateAdminPassword,
+	updateAdminTotpSecret,
 	deleteAdminUser,
 	createCase,
 	listCases,

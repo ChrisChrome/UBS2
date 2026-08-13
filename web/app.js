@@ -133,6 +133,31 @@ function createApp(discordClient) {
 		req.session.destroy(() => res.redirect("/login"));
 	});
 
+	// -- Self-service account --
+	app.get("/account/password", requireAuth, (req, res) => {
+		res.render("account_password", { error: null, success: false });
+	});
+
+	app.post("/account/password", requireAuth, async (req, res) => {
+		const { currentPassword, newPassword, confirmPassword } = req.body;
+		const admin = await queries.getAdminById(req.session.adminId);
+		const render = (error) => res.render("account_password", { error, success: false });
+
+		if (!currentPassword || !(await verifyPassword(currentPassword, admin.password_hash))) {
+			return render("Current password is incorrect.");
+		}
+		if (!newPassword || newPassword.length < 8) {
+			return render("New password must be at least 8 characters.");
+		}
+		if (newPassword !== confirmPassword) {
+			return render("New passwords do not match.");
+		}
+
+		await queries.updateAdminPassword(admin.id, await hashPassword(newPassword));
+		audit(req, "user.password_change", `${admin.username} changed their own password`);
+		res.render("account_password", { error: null, success: true });
+	});
+
 	// -- Public API --
 	app.get("/api/roblox/:userId/verified", async (req, res) => {
 		let verified = false;
@@ -390,6 +415,19 @@ function createApp(discordClient) {
 		await queries.deleteAdminUser(user.id);
 		audit(req, "user.delete", `${user.username} (${user.role})`);
 		res.redirect("/users");
+	});
+
+	app.post("/users/:id/reset-totp", requireAuth, requirePermission(canManageUsers), async (req, res) => {
+		const user = await queries.getAdminById(req.params.id);
+		if (!user || !canActOnUserRole(req.session.role, user.role)) {
+			return res.status(403).send("Forbidden");
+		}
+		const totpSecret = generateTotpSecret();
+		await queries.updateAdminTotpSecret(user.id, totpSecret);
+		audit(req, "user.totp_reset", `${user.username}`);
+		const keyUri = totpKeyUri(user.username, totpSecret, "UBS");
+		const qr = await QRCode.toDataURL(keyUri);
+		res.render("totp_reset", { username: user.username, secret: totpSecret, qr });
 	});
 
 	return app;

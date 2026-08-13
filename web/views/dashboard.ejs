@@ -17,6 +17,7 @@
 		<h1>Cases</h1>
 		<div>
 			Signed in as <%= username %> (<%= role %>)
+			<a href="/account/password">Change password</a>
 			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
 			<% if (canViewAuditLog) { %><a href="/audit-log">Audit log</a><% } %>
 			<form class="inline" method="post" action="/logout"><button type="submit">Log out</button></form>

@@ -34,6 +34,9 @@
 					<td>
 						<% if (canActOnUserRole(actorRole, u.role)) { %>
 							<a href="/users/<%= u.id %>/edit">Edit</a>
+							<form class="inline" method="post" action="/users/<%= u.id %>/reset-totp" onsubmit="return confirm('Reset TOTP for this user? Their current authenticator will stop working.')">
+								<button type="submit">Reset TOTP</button>
+							</form>
 							<form class="inline" method="post" action="/users/<%= u.id %>/delete" onsubmit="return confirm('Delete this user?')">
 								<button type="submit">Delete</button>
 							</form>

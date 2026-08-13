@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>TOTP Reset</title>
+	<style>
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
+		.secret { font-family: monospace; background: #f4f4f4; padding: 8px; word-break: break-all; }
+		img { display: block; margin: 12px 0; }
+	</style>
+</head>
+<body>
+	<h1>TOTP reset for "<%= username %>"</h1>
+	<p>Have them scan this QR code with an authenticator app now — it will not be shown again.</p>
+	<img src="<%= qr %>" alt="TOTP QR code" width="200" height="200" />
+	<p>Or enter this secret manually: <span class="secret"><%= secret %></span></p>
+	<p><a href="/users">Done, back to users</a></p>
+</body>
+</html>
