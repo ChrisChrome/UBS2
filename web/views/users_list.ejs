@@ -30,7 +30,7 @@
 				<tr>
 					<td><%= u.username %></td>
 					<td><span class="badge"><%= u.role %></span></td>
-					<td><%= u.created_at %></td>
+					<td><span class="utc-time" data-utc="<%= u.created_at %>"><%= u.created_at %></span></td>
 					<td>
 						<% if (canActOnUserRole(actorRole, u.role)) { %>
 							<a href="/users/<%= u.id %>/edit">Edit</a>
@@ -48,5 +48,12 @@
 			<% }) %>
 		</tbody>
 	</table>
+	<script>
+		// Stored timestamps are UTC ("YYYY-MM-DD HH:MM:SS"); localize them to the viewer's timezone.
+		document.querySelectorAll(".utc-time").forEach((el) => {
+			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
+			if (!isNaN(parsed)) el.textContent = parsed.toLocaleString();
+		});
+	</script>
 </body>
 </html>

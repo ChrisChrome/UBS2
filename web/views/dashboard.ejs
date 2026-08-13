@@ -31,10 +31,17 @@
 				<tr>
 					<td><a href="/cases/<%= c.id %>"><%= c.title %></a></td>
 					<td><%= c.identity_count %></td>
-					<td><%= c.updated_at %></td>
+					<td><span class="utc-time" data-utc="<%= c.updated_at %>"><%= c.updated_at %></span></td>
 				</tr>
 			<% }) %>
 		</tbody>
 	</table>
+	<script>
+		// Stored timestamps are UTC ("YYYY-MM-DD HH:MM:SS"); localize them to the viewer's timezone.
+		document.querySelectorAll(".utc-time").forEach((el) => {
+			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
+			if (!isNaN(parsed)) el.textContent = parsed.toLocaleString();
+		});
+	</script>
 </body>
 </html>

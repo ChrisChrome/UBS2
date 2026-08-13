@@ -9,6 +9,9 @@
 		table { width: 100%; border-collapse: collapse; }
 		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
 		.action { font-family: monospace; font-size: 12px; background: #eee; padding: 2px 6px; border-radius: 4px; }
+		.controls { display: flex; gap: 10px; margin-bottom: 14px; }
+		.controls input, .controls select { padding: 6px 8px; }
+		.controls input { flex: 1; }
 	</style>
 </head>
 <body>
@@ -20,12 +23,21 @@
 			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
 		</div>
 	</header>
+	<div class="controls">
+		<input id="search" type="text" placeholder="Search actor, action, or detail..." />
+		<select id="sortBy">
+			<option value="time-desc">Newest first</option>
+			<option value="time-asc">Oldest first</option>
+			<option value="action-asc">Action (A-Z)</option>
+			<option value="action-desc">Action (Z-A)</option>
+		</select>
+	</div>
 	<table>
 		<thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
-		<tbody>
+		<tbody id="entries">
 			<% entries.forEach((e) => { %>
-				<tr>
-					<td><%= e.created_at %></td>
+				<tr data-actor="<%= (e.actor || 'unknown').toLowerCase() %>" data-action="<%= e.action.toLowerCase() %>" data-detail="<%= (e.detail || '').toLowerCase() %>" data-utc="<%= e.created_at %>">
+					<td class="when"><%= e.created_at %></td>
 					<td><%= e.actor || 'unknown' %></td>
 					<td><span class="action"><%= e.action %></span></td>
 					<td><%= e.detail || '' %></td>
@@ -36,5 +48,59 @@
 			<% } %>
 		</tbody>
 	</table>
+	<p id="emptyMessage" style="display: none;"><em>No matching entries.</em></p>
+	<script>
+		const tbody = document.getElementById("entries");
+		const rows = Array.from(tbody.querySelectorAll("tr[data-utc]"));
+
+		// Stored timestamps are UTC ("YYYY-MM-DD HH:MM:SS"); localize them to the viewer's timezone.
+		rows.forEach((row) => {
+			const utc = row.dataset.utc;
+			const parsed = new Date(utc.replace(" ", "T") + "Z");
+			row.dataset.time = parsed.getTime();
+			if (!isNaN(parsed)) {
+				row.querySelector(".when").textContent = parsed.toLocaleString();
+			}
+		});
+
+		const searchInput = document.getElementById("search");
+		const sortSelect = document.getElementById("sortBy");
+		const emptyMessage = document.getElementById("emptyMessage");
+
+		function render() {
+			const query = searchInput.value.trim().toLowerCase();
+			const [sortKey, sortDir] = sortSelect.value.split("-");
+
+			let visible = rows.filter(
+				(row) =>
+					!query ||
+					row.dataset.actor.includes(query) ||
+					row.dataset.action.includes(query) ||
+					row.dataset.detail.includes(query)
+			);
+
+			visible.sort((a, b) => {
+				let diff;
+				if (sortKey === "action") {
+					diff = a.dataset.action.localeCompare(b.dataset.action);
+				} else {
+					diff = Number(a.dataset.time) - Number(b.dataset.time);
+				}
+				return sortDir === "desc" ? -diff : diff;
+			});
+
+			rows.forEach((row) => (row.style.display = "none"));
+			visible.forEach((row) => {
+				row.style.display = "";
+				tbody.appendChild(row);
+			});
+			emptyMessage.style.display = visible.length === 0 ? "" : "none";
+		}
+
+		searchInput.addEventListener("input", render);
+		sortSelect.addEventListener("change", render);
+		render();
+	</script>
 </body>
 </html>
+

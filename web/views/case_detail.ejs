@@ -62,7 +62,7 @@
 						<td><span class="badge <%= identity.status %>"><%= identity.status %></span></td>
 						<td class="history">
 							<% (histories[identity.id] || []).forEach((h) => { %>
-								<div><%= h.changed_at %>: <%= h.username %> / <%= h.display_name %></div>
+								<div><span class="utc-time" data-utc="<%= h.changed_at %>"><%= h.changed_at %></span>: <%= h.username %> / <%= h.display_name %></div>
 							<% }) %>
 							<% if (!histories[identity.id] || histories[identity.id].length === 0) { %>
 								<em>no changes logged</em>
@@ -119,7 +119,7 @@
 		<% } %>
 		<% notes.forEach((note) => { %>
 			<div class="note">
-				<div class="meta"><%= note.author || 'unknown' %> &middot; <%= note.created_at %></div>
+				<div class="meta"><%= note.author || 'unknown' %> &middot; <span class="utc-time" data-utc="<%= note.created_at %>"><%= note.created_at %></span></div>
 				<div><%= note.body %></div>
 				<% if (note.files && note.files.length > 0) { %>
 					<div class="files">
@@ -136,5 +136,12 @@
 			</div>
 		<% }) %>
 	</section>
+	<script>
+		// Stored timestamps are UTC ("YYYY-MM-DD HH:MM:SS"); localize them to the viewer's timezone.
+		document.querySelectorAll(".utc-time").forEach((el) => {
+			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
+			if (!isNaN(parsed)) el.textContent = parsed.toLocaleString();
+		});
+	</script>
 </body>
 </html>
