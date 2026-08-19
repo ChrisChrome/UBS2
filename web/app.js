@@ -157,6 +157,10 @@ function createApp(discordClient) {
 		req.session.destroy(() => res.redirect("/login"));
 	});
 
+	app.get("/logout", requireAuth, (req, res) => {
+		req.session.destroy(() => res.redirect("/login"));
+	})
+
 	// -- Self-service account --
 	app.get("/account/password", requireAuth, (req, res) => {
 		res.render("account_password", { error: null, success: false });
