@@ -4,8 +4,15 @@
 	<meta charset="utf-8" />
 	<title>User Created</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
-		.secret { font-family: monospace; background: #f4f4f4; padding: 8px; word-break: break-all; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --card: #1e1e1e; --link: #8ab4f8;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --card: #f4f4f4; --link: #0645ad; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: var(--fg); background: var(--bg); }
+		a { color: var(--link); }
+		.secret { font-family: monospace; background: var(--card); color: var(--fg); padding: 8px; word-break: break-all; }
 		img { display: block; margin: 12px 0; }
 	</style>
 </head>

@@ -4,11 +4,18 @@
 	<meta charset="utf-8" />
 	<title>UBS Setup</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
-		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --muted: #aaa; --border: #333;
+			--input-bg: #1e1e1e; --input-border: #444; --card: #1e1e1e;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --muted: #777; --border: #ddd; --input-bg: #fff; --input-border: #ccc; --card: #f4f4f4; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: var(--fg); background: var(--bg); }
+		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
 		button { padding: 8px 16px; }
-		.error { color: #b00020; margin-bottom: 12px; }
-		.secret { font-family: monospace; background: #f4f4f4; padding: 8px; word-break: break-all; }
+		.error { color: #ff6b6b; margin-bottom: 12px; }
+		.secret { font-family: monospace; background: var(--card); color: var(--fg); padding: 8px; word-break: break-all; }
 		img { display: block; margin: 12px 0; }
 	</style>
 </head>

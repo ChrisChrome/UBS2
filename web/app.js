@@ -70,6 +70,7 @@ function createApp(discordClient) {
 			cookie: { httpOnly: true, sameSite: "lax", maxAge: 1000 * 60 * 60 * 8 },
 		})
 	);
+	app.use(express.static(path.join(__dirname, "public")));
 
 	function requireAuth(req, res, next) {
 		if (req.session.adminId) return next();

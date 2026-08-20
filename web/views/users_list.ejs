@@ -4,10 +4,17 @@
 	<meta charset="utf-8" />
 	<title>Manage Users</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: #222; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --border: #333; --link: #8ab4f8;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --border: #ddd; --link: #0645ad; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: var(--fg); background: var(--bg); }
+		a { color: var(--link); }
 		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 		table { width: 100%; border-collapse: collapse; }
-		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
 		a.button, button { padding: 6px 12px; }
 		form.inline { display: inline; }
 		.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; color: #fff; background: #555; }

@@ -4,28 +4,44 @@
 	<meta charset="utf-8" />
 	<title><%= caseItem.title %></title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: #222; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --muted: #aaa; --border: #333;
+			--input-bg: #1e1e1e; --input-border: #444; --link: #8ab4f8;
+			--alert-bg: #3a1f1f; --alert-fg: #ff6b6b; --alert-border: #6b2b2b;
+		}
+		@media (prefers-color-scheme: light) {
+			:root {
+				--bg: #fff; --fg: #222; --muted: #555; --border: #ddd;
+				--input-bg: #fff; --input-border: #ccc; --link: #0645ad;
+				--alert-bg: #fdecea; --alert-fg: #b00020; --alert-border: #f5c6cb;
+			}
+		}
+		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: var(--fg); background: var(--bg); }
+		a { color: var(--link); }
 		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 		section { margin-bottom: 32px; }
 		table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
 		.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; color: #fff; }
 		.badge.verified { background: #c0392b; }
 		.badge.suspected { background: #999; }
 		form.inline { display: inline; }
-		textarea { width: 100%; box-sizing: border-box; padding: 8px; }
-		input, select { padding: 6px; }
-		.history { font-size: 12px; color: #555; }
+		textarea { width: 100%; box-sizing: border-box; padding: 8px; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
+		input, select { padding: 6px; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
+		.history { font-size: 12px; color: var(--muted); }
 		.history .recent-change { background: #fff3cd; color: #7a5b00; border-radius: 3px; padding: 2px 4px; }
-		.note { border-bottom: 1px solid #eee; padding: 8px 0; }
-		.note .meta { font-size: 12px; color: #777; }
-		.alert { background: #fdecea; color: #b00020; border: 1px solid #f5c6cb; padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; }
+		.note { border-bottom: 1px solid var(--border); padding: 8px 0; }
+		.note .meta { font-size: 12px; color: var(--muted); }
+		.alert { background: var(--alert-bg); color: var(--alert-fg); border: 1px solid var(--alert-border); padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; }
 	</style>
 </head>
 <body>
 	<p><a href="/">&larr; Back to cases</a></p>
 	<% if (error) { %><div class="alert"><%= error %></div><% } %>
 	<header>
+		<div style="display:flex; align-items:center; gap:12px;"></div>
+			<img src="/images/ubs.png" alt="UBS logo" style="height:48px; width:auto; object-fit:contain;">
+		</div>
 		<h1><%= caseItem.title %></h1>
 		<div style="text-align: right;">
 			<div>Welcome <%= userInfo.username %> (<%= userInfo.role %>)</div>

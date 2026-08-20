@@ -4,13 +4,21 @@
 	<meta charset="utf-8" />
 	<title>Audit Log</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: #222; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --muted: #aaa; --border: #333;
+			--input-bg: #1e1e1e; --input-border: #444; --card: #262626; --link: #8ab4f8;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --muted: #777; --border: #ddd; --input-bg: #fff; --input-border: #ccc; --card: #eee; --link: #0645ad; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; color: var(--fg); background: var(--bg); }
+		a { color: var(--link); }
 		header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 		table { width: 100%; border-collapse: collapse; }
-		th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
-		.action { font-family: monospace; font-size: 12px; background: #eee; padding: 2px 6px; border-radius: 4px; }
+		th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+		.action { font-family: monospace; font-size: 12px; background: var(--card); padding: 2px 6px; border-radius: 4px; }
 		.controls { display: flex; gap: 10px; margin-bottom: 14px; }
-		.controls input, .controls select { padding: 6px 8px; }
+		.controls input, .controls select { padding: 6px 8px; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
 		.controls input { flex: 1; }
 	</style>
 </head>

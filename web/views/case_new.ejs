@@ -4,9 +4,17 @@
 	<meta charset="utf-8" />
 	<title>New Case</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #222; }
-		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
-		.error { color: #b00020; margin-bottom: 12px; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --muted: #aaa; --border: #333;
+			--input-bg: #1e1e1e; --input-border: #444; --link: #8ab4f8;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --muted: #777; --border: #ddd; --input-bg: #fff; --input-border: #ccc; --link: #0645ad; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: var(--fg); background: var(--bg); }
+		a { color: var(--link); }
+		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
+		.error { color: #ff6b6b; margin-bottom: 12px; }
 	</style>
 </head>
 <body>

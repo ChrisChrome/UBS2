@@ -4,13 +4,23 @@
 	<meta charset="utf-8" />
 	<title>UBS Login</title>
 	<style>
-		body { font-family: system-ui, sans-serif; max-width: 400px; margin: 80px auto; color: #222; }
-		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; }
+		:root {
+			--bg: #121212; --fg: #e8e8e8; --muted: #aaa; --border: #333;
+			--input-bg: #1e1e1e; --input-border: #444;
+		}
+		@media (prefers-color-scheme: light) {
+			:root { --bg: #fff; --fg: #222; --muted: #777; --border: #ddd; --input-bg: #fff; --input-border: #ccc; }
+		}
+		body { font-family: system-ui, sans-serif; max-width: 400px; margin: 80px auto; color: var(--fg); background: var(--bg); }
+		input { display: block; width: 100%; margin-bottom: 12px; padding: 8px; box-sizing: border-box; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; }
 		button { padding: 8px 16px; }
-		.error { color: #b00020; margin-bottom: 12px; }
+		.error { color: #ff6b6b; margin-bottom: 12px; }
 	</style>
 </head>
 <body>
+	<div style="display:flex; align-items:center; gap:12px;"></div>
+			<img src="/images/ubs.png" alt="UBS logo" style="height:48px; width:auto; object-fit:contain;">
+		</div>
 	<h1>UBS Login</h1>
 	<% if (error) { %><div class="error"><%= error %></div><% } %>
 	<form method="post" action="/login">
