@@ -18,9 +18,15 @@
 	</style>
 </head>
 <body>
-	<div style="display:flex; align-items:center; gap:12px;"></div>
-			<img src="/images/ubs.png" alt="UBS logo" style="height:48px; width:auto; object-fit:contain;">
-		</div>
+	<style>
+		.logo-row { display: inline-flex; align-items: center; gap: 12px; }
+		.logo-row img { height: 48px; width: auto; object-fit: contain; display: block; }
+		/* make the following h1 sit inline with the logo and remove default margins */
+		.logo-row + h1 { display: inline-block; vertical-align: middle; margin: 0; }
+	</style>
+	<div class="logo-row">
+		<img src="/images/ubs.png" alt="UBS logo">
+	</div>
 	<h1>UBS Login</h1>
 	<% if (error) { %><div class="error"><%= error %></div><% } %>
 	<form method="post" action="/login">

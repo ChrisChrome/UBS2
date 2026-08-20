@@ -39,8 +39,14 @@
 	<p><a href="/">&larr; Back to cases</a></p>
 	<% if (error) { %><div class="alert"><%= error %></div><% } %>
 	<header>
-		<div style="display:flex; align-items:center; gap:12px;"></div>
-			<img src="/images/ubs.png" alt="UBS logo" style="height:48px; width:auto; object-fit:contain;">
+		<style>
+			.logo-row { display: inline-flex; align-items: center; gap: 12px; }
+			.logo-row img { height: 48px; width: auto; object-fit: contain; display: block; }
+			/* make the following h1 sit inline with the logo and remove default margins */
+			.logo-row + h1 { display: inline-block; vertical-align: middle; margin: 0; }
+		</style>
+		<div class="logo-row">
+			<img src="/images/ubs.png" alt="UBS logo">
 		</div>
 		<h1><%= caseItem.title %></h1>
 		<div style="text-align: right;">
