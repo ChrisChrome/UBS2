@@ -204,9 +204,9 @@ function createApp(discordClient) {
 	});
 
 	// -- Public API --
-	app.get("/api/check/:type/:userId/:verified", async (req, res) => {
+	app.get("/api/check/:type/:userId", async (req, res) => {
 		let verified = false;
-		let checkVerified = req.params.verified === "verified";
+		let checkVerified = (req.query.verified) ? true : false;
 		// Type can be "discord", "roblox", or "any" (any platform). If "any", we check if the userid provided is verified on any platform.
 		if (req.params.type === "discord") {
 			const identity = await queries.getIdentity("discord", req.params.userId);
