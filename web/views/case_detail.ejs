@@ -34,7 +34,7 @@
 				<% if (userInfo.perms.canViewAuditLog) { %> <a href="/audit-log">Audit log</a><% } %>
 				<a href="/logout">Log Out</a>
 			</div>
-			<% if (userInfo.perms.canManageUsers { %>
+			<% if (userInfo.perms.canManageUsers) { %>
 			<div>
 				<form class="inline" method="post" action="/cases/<%= caseItem.id %>/check-names">
 					<button type="submit">Force check all names</button>
@@ -96,7 +96,7 @@
 			</tbody>
 		</table>
 
-		<% if (user.perms.canAddIdentities) { %>
+		<% if (userInfo.perms.canAddIdentities) { %>
 		<h3>Link a new identity</h3>
 		<form method="post" action="/cases/<%= caseItem.id %>/identities">
 			<select name="platform" required>
@@ -104,7 +104,7 @@
 				<option value="roblox">Roblox</option>
 			</select>
 			<input type="text" name="platformUserId" placeholder="Platform user ID" required />
-			<% if (user.perms.canEditCases) { %>
+			<% if (userInfo.perms.canEditCases) { %>
 				<select name="status">
 					<option value="suspected">Suspected</option>
 					<option value="verified">Verified alt/alias</option>
@@ -117,7 +117,7 @@
 
 	<section>
 		<h2>Notes</h2>
-		<% if (user.perms.canAddIdentities) { %>
+		<% if (userInfo.perms.canAddIdentities) { %>
 		<form method="post" action="/cases/<%= caseItem.id %>/notes" enctype="multipart/form-data">
 			<textarea name="body" rows="3" placeholder="Add a note..." required></textarea>
 			<input type="file" name="files" multiple />
@@ -135,7 +135,7 @@
 						<% }) %>
 					</div>
 				<% } %>
-				<% if (user.perms.canDeleteNotes) { %>
+				<% if (userInfo.perms.canDeleteNotes) { %>
 					<form class="inline" method="post" action="/notes/<%= note.id %>/delete" onsubmit="return confirm('Delete this note?')">
 						<button type="submit">Delete</button>
 					</form>
