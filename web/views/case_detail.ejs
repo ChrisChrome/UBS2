@@ -26,18 +26,25 @@
 	<% if (error) { %><div class="alert"><%= error %></div><% } %>
 	<header>
 		<h1><%= caseItem.title %></h1>
-		<div>
-			Signed in as <%= username %>
-			<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
-			<% if (canManageUsers) { %>
+		<div style="text-align: right;">
+			<div>Welcome <%= userInfo.username %> (<%= userInfo.role %>)</div>
+			<div>
+				<a href="/account/password">Change password</a>
+				<% if (userInfo.perms.canManageUsers) { %> <a href="/users">Manage users</a><% } %>
+				<% if (userInfo.perms.canViewAuditLog) { %> <a href="/audit-log">Audit log</a><% } %>
+				<a href="/logout">Log Out</a>
+			</div>
+			<% if (userInfo.perms.canManageUsers { %>
+			<div>
 				<form class="inline" method="post" action="/cases/<%= caseItem.id %>/check-names">
 					<button type="submit">Force check all names</button>
 				</form>
-			<% } %>
-			<% if (canDeleteCases) { %>
-				<form class="inline" method="post" action="/cases/<%= caseItem.id %>/delete" onsubmit="return confirm('Delete this entire case? This cannot be undone.')">
-					<button type="submit">Delete case</button>
-				</form>
+				<% if (userInfo.perms.canDeleteCases) { %>
+					<form class="inline" method="post" action="/cases/<%= caseItem.id %>/delete" onsubmit="return confirm('Delete this entire case? This cannot be undone.')">
+						<button type="submit">Delete case</button>
+					</form>
+				<% } %>
+			</div>
 			<% } %>
 		</div>
 	</header>
@@ -69,7 +76,7 @@
 							<% } %>
 						</td>
 						<td>
-							<% if (canEditCases) { %>
+							<% if (userInfo.perms.canEditCases) { %>
 								<% if (identity.status === 'verified') { %>
 									<form class="inline" method="post" action="/identities/<%= identity.id %>/unverify">
 										<button type="submit">Unverify</button>
@@ -89,7 +96,7 @@
 			</tbody>
 		</table>
 
-		<% if (canAddIdentities) { %>
+		<% if (user.perms.canAddIdentities) { %>
 		<h3>Link a new identity</h3>
 		<form method="post" action="/cases/<%= caseItem.id %>/identities">
 			<select name="platform" required>
@@ -97,7 +104,7 @@
 				<option value="roblox">Roblox</option>
 			</select>
 			<input type="text" name="platformUserId" placeholder="Platform user ID" required />
-			<% if (canEditCases) { %>
+			<% if (user.perms.canEditCases) { %>
 				<select name="status">
 					<option value="suspected">Suspected</option>
 					<option value="verified">Verified alt/alias</option>
@@ -110,7 +117,7 @@
 
 	<section>
 		<h2>Notes</h2>
-		<% if (canAddIdentities) { %>
+		<% if (user.perms.canAddIdentities) { %>
 		<form method="post" action="/cases/<%= caseItem.id %>/notes" enctype="multipart/form-data">
 			<textarea name="body" rows="3" placeholder="Add a note..." required></textarea>
 			<input type="file" name="files" multiple />
@@ -128,7 +135,7 @@
 						<% }) %>
 					</div>
 				<% } %>
-				<% if (canDeleteNotes) { %>
+				<% if (user.perms.canDeleteNotes) { %>
 					<form class="inline" method="post" action="/notes/<%= note.id %>/delete" onsubmit="return confirm('Delete this note?')">
 						<button type="submit">Delete</button>
 					</form>

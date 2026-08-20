@@ -16,16 +16,18 @@
 	<header>
 		<h1>Cases</h1>
 		<div>
-			<div>Welcome <%= username %> (<%= role %>)</div>
-			<div>
-				<a href="/account/password">Change password</a>
-				<% if (canManageUsers) { %><a href="/users">Manage users</a><% } %>
-				<% if (canViewAuditLog) { %><a href="/audit-log">Audit log</a><% } %>
-				<a href="/logout">Log Out</a>
+			<div style="text-align: right;">
+				<div>Welcome <%= userInfo.username %> (<%= userInfo.role %>)</div>
+				<div>
+					<a href="/account/password">Change password</a>
+					<% if (userInfo.perms.canManageUsers) { %> <a href="/users">Manage users</a><% } %>
+					<% if (userInfo.perms.canViewAuditLog) { %> <a href="/audit-log">Audit log</a><% } %>
+					<a href="/logout">Log Out</a>
+				</div>
 			</div>
 		</div>
 	</header>
-	<% if (canEditCases) { %><p><a class="button" href="/cases/new">+ New case</a></p><% } %>
+	<% if (userInfo.perms.canEditCases) { %><p><a class="button" href="/cases/new">+ New case</a></p><% } %>
 	<table>
 		<thead><tr><th>Title</th><th>Linked IDs</th><th>Updated</th></tr></thead>
 		<tbody>

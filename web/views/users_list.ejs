@@ -17,10 +17,15 @@
 	<p><a href="/">&larr; Back to cases</a></p>
 	<header>
 		<h1>Users</h1>
-		<div>
-			Signed in as <%= username %>
-			<% if (canViewAuditLog) { %><a href="/audit-log">Audit log</a><% } %>
-		</div>
+		<div style="text-align: right;">
+				<div>Welcome <%= userInfo.username %> (<%= userInfo.role %>)</div>
+				<div>
+					<a href="/account/password">Change password</a>
+					<% if (userInfo.perms.canManageUsers) { %> <a href="/users">Manage users</a><% } %>
+					<% if (userInfo.perms.canViewAuditLog) { %> <a href="/audit-log">Audit log</a><% } %>
+					<a href="/logout">Log Out</a>
+				</div>
+			</div>
 	</header>
 	<p><a class="button" href="/users/new">+ New user</a></p>
 	<table>

@@ -31,6 +31,22 @@ const upload = multer({
 	limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
 });
 
+function userInfo(req) {
+	return {
+		id: req.session.adminId,
+		username: req.session.username,
+		role: req.session.role,
+		perms: {
+			canEditCases: canEditCases(req.session.role),
+			canAddIdentities: canAddIdentities(req.session.role),
+			canManageUsers: canManageUsers(req.session.role),
+			canDeleteNotes: canDeleteNotes(req.session.role),
+			canDeleteCases: canDeleteCases(req.session.role),
+			canViewAuditLog: canViewAuditLog(req.session.role)
+		}
+	};
+}
+
 function createApp(discordClient) {
 	const app = express();
 
@@ -187,13 +203,24 @@ function createApp(discordClient) {
 	});
 
 	// -- Public API --
-	app.get("/api/roblox/:userId/verified", async (req, res) => {
+	app.get("/api/check/:type/:userId/:verified", async (req, res) => {
 		let verified = false;
-		try {
-			const identity = await queries.getIdentity("roblox", req.params.userId.trim());
-			verified = Boolean(identity && identity.status === "verified");
-		} catch (err) {
-			console.error(`[Web] roblox verified-check failed: ${err.message}`);
+		let checkVerified = req.params.verified === "verified";
+		// Type can be "discord", "roblox", or "any" (any platform). If "any", we check if the userid provided is verified on any platform.
+		if (req.params.type === "discord") {
+			const identity = await queries.getIdentity("discord", req.params.userId);
+			verified = identity && identity.status === "verified" && checkVerified;
+		} else if (req.params.type === "roblox") {
+			const identity = await queries.getIdentity("roblox", req.params.userId);
+			verified = identity && identity.status === "verified" && checkVerified;
+		} else if (req.params.type === "any") {
+			const discordIdentity = await queries.getIdentity("discord", req.params.userId);
+			const robloxIdentity = await queries.getIdentity("roblox", req.params.userId);
+			verified =
+				(discordIdentity && discordIdentity.status === "verified" && checkVerified) ||
+				(robloxIdentity && robloxIdentity.status === "verified" && checkVerified);
+		} else {
+			return res.status(400).send("Invalid type");
 		}
 		res.type("text/plain").status(200).send(String(verified));
 	});
@@ -203,12 +230,7 @@ function createApp(discordClient) {
 		const cases = await queries.listCases();
 		res.render("dashboard", {
 			cases,
-			username: req.session.username,
-			role: req.session.role,
-			canEditCases: canEditCases(req.session.role),
-			canManageUsers: canManageUsers(req.session.role),
-			canDeleteCases: canDeleteCases(req.session.role),
-			canViewAuditLog: canViewAuditLog(req.session.role),
+			userInfo: userInfo(req),
 		});
 	});
 
@@ -216,19 +238,18 @@ function createApp(discordClient) {
 		const entries = await queries.getAuditLog();
 		res.render("audit_log", {
 			entries,
-			username: req.session.username,
-			canManageUsers: canManageUsers(req.session.role),
+			userInfo: userInfo(req),
 		});
 	});
 
 	app.get("/cases/new", requireAuth, requirePermission(canEditCases), (req, res) => {
-		res.render("case_new", { error: null });
+		res.render("case_new", { error: null, userInfo: userInfo(req) });
 	});
 
 	app.post("/cases", requireAuth, requirePermission(canEditCases), async (req, res) => {
 		const { title } = req.body;
 		if (!title || !title.trim()) {
-			return res.render("case_new", { error: "Title is required." });
+			return res.render("case_new", { error: "Title is required.", userInfo: userInfo(req) });
 		}
 		const caseId = await queries.createCase(title.trim(), req.session.adminId);
 		audit(req, "case.create", `Case #${caseId}: ${title.trim()}`);
@@ -257,12 +278,7 @@ function createApp(discordClient) {
 			identities,
 			notes,
 			histories,
-			username: req.session.username,
-			canEditCases: canEditCases(req.session.role),
-			canAddIdentities: canAddIdentities(req.session.role),
-			canManageUsers: canManageUsers(req.session.role),
-			canDeleteNotes: canDeleteNotes(req.session.role),
-			canDeleteCases: canDeleteCases(req.session.role),
+			userInfo: userInfo(req),
 			error,
 		});
 	});
@@ -423,9 +439,8 @@ function createApp(discordClient) {
 		res.render("users_list", {
 			users,
 			actorRole: req.session.role,
-			canActOnUserRole,
-			username: req.session.username,
-			canViewAuditLog: canViewAuditLog(req.session.role),
+			userInfo: userInfo(req),
+			canActOnUserRole: canActOnUserRole,
 		});
 	});
 
