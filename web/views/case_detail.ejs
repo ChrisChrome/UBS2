@@ -40,15 +40,14 @@
 	<% if (error) { %><div class="alert"><%= error %></div><% } %>
 	<header>
 		<style>
-			.logo-row { display: inline-flex; align-items: center; gap: 12px; }
-			.logo-row img { height: 48px; width: auto; object-fit: contain; display: block; }
-			/* make the following h1 sit inline with the logo and remove default margins */
-			.logo-row + h1 { display: inline-block; vertical-align: middle; margin: 0; }
+			.brand { display: flex; align-items: center; gap: 12px; }
+			.brand img { height: 48px; width: auto; object-fit: contain; display: block; }
+			.brand h1 { margin: 0; font-size: 1.25rem; }
 		</style>
-		<div class="logo-row">
+		<div class="brand">
 			<img src="/images/ubs.png" alt="UBS logo">
+			<h1><%= caseItem.title %></h1>
 		</div>
-		<h1><%= caseItem.title %></h1>
 		<div style="text-align: right;">
 			<div>Welcome <%= userInfo.username %> (<%= userInfo.role %>)</div>
 			<div>

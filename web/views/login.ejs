@@ -19,15 +19,14 @@
 </head>
 <body>
 	<style>
-		.logo-row { display: inline-flex; align-items: center; gap: 12px; }
-		.logo-row img { height: 48px; width: auto; object-fit: contain; display: block; }
-		/* make the following h1 sit inline with the logo and remove default margins */
-		.logo-row + h1 { display: inline-block; vertical-align: middle; margin: 0; }
+		.brand { display: flex; align-items: center; gap: 12px; }
+		.brand img { height: 48px; width: auto; object-fit: contain; display: block; }
+		.brand h1 { margin: 0; font-size: 1.25rem; }
 	</style>
-	<div class="logo-row">
+	<div class="brand">
 		<img src="/images/ubs.png" alt="UBS logo">
+		<h1>UBS Login</h1>
 	</div>
-	<h1>UBS Login</h1>
 	<% if (error) { %><div class="error"><%= error %></div><% } %>
 	<form method="post" action="/login">
 		<input type="text" name="username" placeholder="Username" required autocomplete="username" />
