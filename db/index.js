@@ -246,6 +246,23 @@ async function ensureAdminUserFkReferences() {
 	await run("PRAGMA foreign_keys = ON");
 }
 
+// Backfills name_history for identities that have a checked name but no
+// history entries at all (e.g. added before initial-name logging existed).
+async function ensureInitialNameHistory() {
+	const rows = await all(
+		`SELECT li.id, li.username, li.display_name
+		 FROM linked_identities li
+		 WHERE li.last_checked_at IS NOT NULL
+		   AND NOT EXISTS (SELECT 1 FROM name_history nh WHERE nh.identity_id = li.id)`
+	);
+	for (const row of rows) {
+		await run(
+			"INSERT INTO name_history (identity_id, username, display_name) VALUES (?, ?, ?)",
+			[row.id, row.username, row.display_name]
+		);
+	}
+}
+
 async function initSchema() {
 	await execSchema();
 	await ensureColumn("admin_users", "role", "TEXT NOT NULL DEFAULT 'auditor'");
@@ -253,6 +270,7 @@ async function initSchema() {
 	await ensureAdminUserFkReferences();
 	// Rebuilding tables above drops any indexes that belonged to them; recreate.
 	await execSchema();
+	await ensureInitialNameHistory();
 }
 
 module.exports = { db, run, get, all, initSchema };
