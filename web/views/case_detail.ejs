@@ -69,10 +69,11 @@
 						</td>
 						<td><span class="badge <%= identity.status %>"><%= identity.status %></span></td>
 						<td class="history">
-							<% (histories[identity.id] || []).forEach((h) => { %>
-								<div class="utc-change" data-utc="<%= h.changed_at %>"><span class="utc-time" data-utc="<%= h.changed_at %>"><%= h.changed_at %></span>: <%= h.username %> / <%= h.display_name %></div>
+							<% const idHistory = histories[identity.id] || []; %>
+							<% idHistory.forEach((h, idx) => { %>
+								<div class="utc-change" data-utc="<%= h.changed_at %>" data-initial="<%= idx === idHistory.length - 1 %>"><span class="utc-time" data-utc="<%= h.changed_at %>"><%= h.changed_at %></span>: <%= h.username %> / <%= h.display_name %></div>
 							<% }) %>
-							<% if (!histories[identity.id] || histories[identity.id].length === 0) { %>
+							<% if (idHistory.length === 0) { %>
 								<em>no changes logged</em>
 							<% } %>
 						</td>
@@ -151,9 +152,10 @@
 			if (!isNaN(parsed)) el.textContent = parsed.toLocaleString();
 		});
 
-		// Highlight name changes that happened within the last 24 hours.
+		// Highlight name changes that happened within the last 24 hours (skip the initial name).
 		const DAY_MS = 24 * 60 * 60 * 1000;
 		document.querySelectorAll(".utc-change").forEach((el) => {
+			if (el.dataset.initial === "true") return;
 			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
 			if (!isNaN(parsed) && Date.now() - parsed.getTime() < DAY_MS) {
 				el.classList.add("recent-change");
