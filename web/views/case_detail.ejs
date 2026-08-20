@@ -16,6 +16,7 @@
 		textarea { width: 100%; box-sizing: border-box; padding: 8px; }
 		input, select { padding: 6px; }
 		.history { font-size: 12px; color: #555; }
+		.history .recent-change { background: #fff3cd; color: #7a5b00; border-radius: 3px; padding: 2px 4px; }
 		.note { border-bottom: 1px solid #eee; padding: 8px 0; }
 		.note .meta { font-size: 12px; color: #777; }
 		.alert { background: #fdecea; color: #b00020; border: 1px solid #f5c6cb; padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; }
@@ -69,7 +70,7 @@
 						<td><span class="badge <%= identity.status %>"><%= identity.status %></span></td>
 						<td class="history">
 							<% (histories[identity.id] || []).forEach((h) => { %>
-								<div><span class="utc-time" data-utc="<%= h.changed_at %>"><%= h.changed_at %></span>: <%= h.username %> / <%= h.display_name %></div>
+								<div class="utc-change" data-utc="<%= h.changed_at %>"><span class="utc-time" data-utc="<%= h.changed_at %>"><%= h.changed_at %></span>: <%= h.username %> / <%= h.display_name %></div>
 							<% }) %>
 							<% if (!histories[identity.id] || histories[identity.id].length === 0) { %>
 								<em>no changes logged</em>
@@ -148,6 +149,15 @@
 		document.querySelectorAll(".utc-time").forEach((el) => {
 			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
 			if (!isNaN(parsed)) el.textContent = parsed.toLocaleString();
+		});
+
+		// Highlight name changes that happened within the last 24 hours.
+		const DAY_MS = 24 * 60 * 60 * 1000;
+		document.querySelectorAll(".utc-change").forEach((el) => {
+			const parsed = new Date(el.dataset.utc.replace(" ", "T") + "Z");
+			if (!isNaN(parsed) && Date.now() - parsed.getTime() < DAY_MS) {
+				el.classList.add("recent-change");
+			}
 		});
 	</script>
 </body>
